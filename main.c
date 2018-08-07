@@ -1,31 +1,70 @@
 #include <stdio.h>
-typedef struct commonfration
+#include <string.h>
+#define MAXSIZE 100
+typedef struct fr
 {
-    long m;
-    long n;
-}commonFraction;
+    long m;// числитель
+    long n;// знаменатель
+}fraction;
+
+void naturalOrWhole(char *number, fraction drob, long *i) //формирование числителя only
+{
+    long j = *i;
+ j++;
+
+    while(((number[j]-'0') >= 0)&&((number[j]-'0') <= 9)) //перевод строки в число
+    {
+        drob.m = drob.m*10 + (number[j]-'0');
+        j++;
+    }
+    *i = j;
+}
+
+int CheckForTheNumber(const char *number, long *i)
+{
+    long j = *i;
+    if ((number[j] != ' ')&&(number[j] != '\n')&&(number[j] != EOF))
+        return 0;
+    return 1;
+}
+
+void skipingSpaces(long *i)
+{
+    long g = *i;
+    while ((g<strlen(number))&&(number[g]<=' ')) //пропуск пробелов
+        g++;
+    *i = g;
+}
+
+void signDefinition(const char *number, fraction drob, long i)
+{
+    if (number[i] == '-')
+        drob.m = -1;
+}
 
 void representationOfNumber()
 {
-    puts("Press 1 if rational is natural or integer"); //Если число целое или натуральное
-    puts("Press 2 if rational is common fraction"); //Если число обыкновенная дробь
-    puts("Press 3 if rational is mixed number"); //Если смешанное число
-    puts("Press 4 if rational is final decimal fraction or infinite periodic"); //Если конечная десятичная дробь или бесконечная периодическая дробь
-    puts("Press any key if it's no rational number or for exit");
-    static int choose;
-    scanf("%d", &choose);
-    switch (choose)
-    {
-   1:function1();
-        break;
-   2:function2();
-        break;
-   3:function3();
-        break;
-   4:function4();
-        break;
+        char number[MAXSIZE];
+        gets(number);
+        fraction drob;
+
+    long i=0;//позиция каретки
+    drob.n = 1; //знаменатель
+
+    do {
+        skipingSpaces(&i);
+        signDefinition(number, drob, i); //Определение знака
+        naturalOrWhole(number, drob, &i); //Все числа изначально считываем как целые
+        if (!(CheckForTheNumber(number, &i)))//Есть ли после считанных цифр другие символы
+        {
+            puts("Введите рациональное число снова!");
+            gets(number);
+        }
+        else break;
     }
-    system ("pause");
+    while (number);
+
+    //system ("pause");
 }
 
 int main() {
