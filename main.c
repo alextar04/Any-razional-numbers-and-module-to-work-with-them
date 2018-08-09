@@ -7,7 +7,7 @@ typedef struct fr
     long n;// знаменатель
 }fraction;
 
-void naturalOrWhole(char *number, fraction drob, long *i) //формирование числителя only
+void wholeNumerator(const char *number, fraction drob, long *i) //формирование числителя only
 {
     long j = *i;
  j++;
@@ -20,15 +20,52 @@ void naturalOrWhole(char *number, fraction drob, long *i) //формирован
     *i = j;
 }
 
-int CheckForTheNumber(const char *number, long *i)
+void wholeDenominator(const char *number, fraction drob, long *i) //формирование знаментеля only
 {
     long j = *i;
-    if ((number[j] != ' ')&&(number[j] != '\n')&&(number[j] != EOF))
-        return 0;
-    return 1;
+    j++;
+
+    while(((number[j]-'0') >= 0)&&((number[j]-'0') <= 9)) //перевод строки в число
+    {
+        drob.n = drob.n*10 + (number[j]-'0');
+        j++;
+    }
+    *i = j;
 }
 
-void skipingSpaces(long *i)
+int checkAnotherSymbols(const char *number, long i)
+{
+    i++;
+    if ((number[i] != ' ')&&(number[i] != '\n')&&(number[i] != EOF) && (number[i] != 'e') && (number[i] != 'E') && (number[i] != '.') && (number[i] != ',') && (number[i] != '/'))
+        return 1;//Если постронний символ
+    return 0;
+}
+
+void isMixedFraction(const char *number,fraction drob, long *i)
+{
+    long g = *i;
+    g++;
+    if (number[g] == ' ')
+    {
+        long integerPart = drob.m;
+        drob.m = 0;
+        g++;
+        wholeNumerator(number, drob, g); //как целые
+        //Написать код для проверки на '/'
+        g++;
+        wholeDenominator(number, drob, g);
+        //Написать код для проверки больше числитель или знаменатель '/'
+        drob.m+=(integerPart*drob.n);
+    }
+    *i = g;
+}
+
+void checkOrdinaryFraction(const char *number,fraction drob, long *i) // Для обыкновенной дроби
+{
+ if (number[*i] == '/') wholeDenominator(number, drob, i);
+}
+
+void skipingSpaces(const char *number, long *i)
 {
     long g = *i;
     while ((g<strlen(number))&&(number[g]<=' ')) //пропуск пробелов
@@ -49,20 +86,24 @@ void representationOfNumber()
         fraction drob;
 
     long i=0;//позиция каретки
+    drob.m = 0; //числитель
     drob.n = 1; //знаменатель
 
-    do {
-        skipingSpaces(&i);
+    do { //Этот кусок кода - тупо ввод обыкновенного числа
+        skipingSpaces(number, &i);
         signDefinition(number, drob, i); //Определение знака
-        naturalOrWhole(number, drob, &i); //Все числа изначально считываем как целые
-        if (!(CheckForTheNumber(number, &i)))//Есть ли после считанных цифр другие символы
+        wholeNumerator(number, drob, &i); //Все числа изначально считываем как целые
+        if (checkAnotherSymbols(number, i))//Допустимы ли в воде следующие члены или попросить новый ввод
         {
-            puts("Введите рациональное число снова!");
-            gets(number);
+                puts("Ошибка ввода, введите рациональное число снова!");
+                gets(number);
         }
         else break;
     }
     while (number);
+
+    checkOrdinaryFraction(number, drob, &i); //для обыкновенной дроби
+
 
     //system ("pause");
 }
