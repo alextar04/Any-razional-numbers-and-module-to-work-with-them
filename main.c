@@ -33,7 +33,7 @@ void wholeDenominator(const char *number, fraction drob, long *i) //формир
     *i = j;
 }
 
-int checkAnotherSymbols(const char *number, long i)
+int isAnotherSymbols(const char *number, long i)
 {
     i++;
     if ((number[i] != ' ')&&(number[i] != '\n')&&(number[i] != EOF) && (number[i] != 'e') && (number[i] != 'E') && (number[i] != '.') && (number[i] != ',') && (number[i] != '/'))
@@ -60,7 +60,7 @@ void isMixedFraction(const char *number,fraction drob, long *i)
     *i = g;
 }
 
-void checkOrdinaryFraction(const char *number,fraction drob, long *i) // Для обыкновенной дроби
+void isOrdinaryFraction(const char *number,fraction drob, long *i) // Для обыкновенной дроби
 {
  if (number[*i] == '/') wholeDenominator(number, drob, i);
 }
@@ -79,6 +79,16 @@ void signDefinition(const char *number, fraction drob, long i)
         drob.m = -1;
 }
 
+void isfiniteDecimalSequence(const char *number, fraction drob, long *i) //конечная десятичная последовательность
+{
+    long j = *i;
+    if ((number[j] == '.')||(number[j] == ','))
+    {
+        wholeNumerator(number,drob, i);
+    }
+    *i = j;
+}
+
 void representationOfNumber()
 {
         char number[MAXSIZE];
@@ -93,7 +103,7 @@ void representationOfNumber()
         skipingSpaces(number, &i);
         signDefinition(number, drob, i); //Определение знака
         wholeNumerator(number, drob, &i); //Все числа изначально считываем как целые
-        if (checkAnotherSymbols(number, i))//Допустимы ли в воде следующие члены или попросить новый ввод
+        if (isAnotherSymbols(number, i))//Допустимы ли в воде следующие члены или попросить новый ввод
         {
                 puts("Ошибка ввода, введите рациональное число снова!");
                 gets(number);
@@ -102,8 +112,9 @@ void representationOfNumber()
     }
     while (number);
 
-    checkOrdinaryFraction(number, drob, &i); //для обыкновенной дроби
-
+    isOrdinaryFraction(number, drob, &i); //для обыкновенной дроби
+    isMixedFraction(number, drob, &i); //для смешанной дроби
+    isfiniteDecimalSequence(number, drob, &i); //конечная десятичная последовательность
 
     //system ("pause");
 }
