@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
 #define MAXSIZE 100
 typedef struct fr
 {
@@ -79,14 +80,95 @@ void signDefinition(const char *number, fraction drob, long i)
         drob.m = -1;
 }
 
-void isfiniteDecimalSequence(const char *number, fraction drob, long *i) //конечная десятичная последовательность
+long isfiniteDecimalSequence(const char *number, fraction drob, long *i) //конечная десятичная последовательность
 {
     long j = *i;
+    long integerPart = drob.m;
+    long realPart=0;
     if ((number[j] == '.')||(number[j] == ','))
     {
-        wholeNumerator(number,drob, i);
+        long jOld = j; //старое j чтобы узнать знаменатель
+        wholeNumerator(number,drob, j);
+        long denominator = 10 * (j - jOld);
+        realPart = drob.m;
+        drob.m+=(denominator*integerPart);
     }
     *i = j;
+    return realPart;
+}
+
+int isInfinitePeriodicFraction(const char *number, fraction drob, long *i, long realPart) {
+    long j = *i;
+    long period = 0;
+    long jOld = j;
+    if (number[j++] == '(')
+        while (((number[j] - '0') >= 0) && ((number[j] - '0') <= 9)) {
+            period = period*10 + (number[j]-'0');
+            j++;
+        }
+    if (number[j] != ')') {
+        return 0;//попросить новый ввод
+    }
+    long naturalCount = 10*(j-jOld+1)*realPart + period;
+    long difference = naturalCount - realPart;
+    long newDenominator = 0;
+    for (int i = 0; i<(j - jOld+1); i++)
+    {
+        newDenominator = 10*newDenominator + 9;
+    }
+    drob.m = (drob.m - realPart)+difference;
+    drob.n = newDenominator;
+    *i = j;
+}
+
+int isMultiplicationAndDegree(const char *number, fraction drob, long *i, long realPart)
+{
+    skipingSpaces(number, i);
+    long j = *i;
+    int degree=0;
+    if (number[j] == '*')
+    {
+        skipingSpaces(number, &j);
+        if ((number[j] != 1)&&(number[j++] != 0))
+            return 0;
+    }
+    j++;
+    char sign = number[j];
+    if ((number[j] != '-')&&(number[j] != '+')&&(number[j]<='0')&&(number[j]>='9'))
+        return 0;
+    j++;
+    while(((number[j]-'0') >= 0)&&((number[j]-'0') <= 9)) //перевод строки в число
+    {
+        degree = degree*10 + (number[j]-'0');
+        j++;
+    }
+    double multiplier = pow(10, sign * degree);
+    if (sign == '-') drob.n*=multiplier;
+    else drob.m*=multiplier;
+}
+
+int isExponentaStyle(const char *number, fraction drob, long *i, long realPart)
+{
+    long j = *i;
+    if ((number[j] == 'e')||(number[j]=='E')) {
+        j++;
+        long degree = 0;
+        int sign = 1;
+        if (number[j] == '-') {
+             sign = -1;
+        }
+        j++;
+
+        while (((number[j] - '0') >= 0) && ((number[j] - '0') <= 9)) {
+            degree = degree * 10 + (number[j] - '0');
+            j++;
+        }
+        
+        double multiplier = sign  * pow(10, degree);
+        if (sign < 0) drob.n*=multiplier;
+        else drob.m*=multiplier;
+    } else
+ return 0;
 }
 
 void representationOfNumber()
@@ -114,9 +196,13 @@ void representationOfNumber()
 
     isOrdinaryFraction(number, drob, &i); //для обыкновенной дроби
     isMixedFraction(number, drob, &i); //для смешанной дроби
-    isfiniteDecimalSequence(number, drob, &i); //конечная десятичная последовательность
+    long realPart = isfiniteDecimalSequence(number, drob, &i); //конечная десятичная последовательность
+    isInfinitePeriodicFraction(number, drob, &i, realPart);  //бесконечная периодическая дробь
+    isMultiplicationAndDegree(number, drob, &i, realPart); // когда задано в виде умножения на 10 в степени
+    isExponentaStyle(number,drob,&i,realPart);// задание рационального числа через экспоненту
 
-    //system ("pause");
+
+    //Сократить дробь;
 }
 
 int main() {
