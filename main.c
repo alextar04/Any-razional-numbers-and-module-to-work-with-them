@@ -35,10 +35,8 @@ void wholeDenominator(const char *number, fraction drob, long *i) //формир
 
 int isAnotherSymbols(const char *number, long i)
 {
-    i++;
     if ((number[i] != ' ')&&(number[i] != '\n')&&(number[i] != EOF) && (number[i] != 'e') && (number[i] != 'E') && (number[i] != '.') && (number[i] != ',') && (number[i] != '/'))
         return 1;//Если постронний символ
-    i--;
     return 0;
 }
 
@@ -76,11 +74,11 @@ void skipingSpaces(const char *number, long *i)
     *i = g;
 }
 
-void signDefinition(const char *number, int sign, long *i)
+void signDefinition(const char *number, int *sign, long *i)
 {
     long j = *i;
     if (number[j] == '-') {
-        sign = -1;
+        *sign = -1;
         j++;
     }
     *i = j;
