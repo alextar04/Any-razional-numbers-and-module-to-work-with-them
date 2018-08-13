@@ -1,6 +1,10 @@
+#include <windows.h>
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
+#include <conio.h>
+#include <eaptypes.h>
+
 #define MAXSIZE 100
 typedef struct fr
 {
@@ -20,14 +24,13 @@ void wholeNumerator(const char *number, fraction *drob, long *i) //формир�
     *i = j;
 }
 
-void wholeDenominator(const char *number, fraction drob, long *i) //формирование знаментеля only
+void wholeDenominator(const char *number, fraction *drob, long *i) //формирование знаментеля only
 {
     long j = *i;
-    j++;
 
     while(((number[j]-'0') >= 0)&&((number[j]-'0') <= 9)) //перевод строки в число
     {
-        drob.n = drob.n*10 + (number[j]-'0');
+        drob->n = (drob->n)*10 + (number[j]-'0');
         j++;
     }
     *i = j;
@@ -40,28 +43,27 @@ int isAnotherSymbols(const char *number, long i)
     return 0;
 }
 
-int isMixedFraction(const char *number,fraction drob, long *i)
+int isMixedFraction(const char *number,fraction *drob, long *i)
 {
     long g = *i;
-    g++;
     if (number[g] == ' ')
     {
-        long integerPart = drob.m;
-        drob.m = 0;
-        g++;
-        wholeNumerator(number, &drob, g); //как целые
+        skipingSpaces(number, &g);
+        long integerPart = drob->m;
+        drob->m = 0;
+        wholeNumerator(number, drob, &g); //как целые
         if (number[g] != '/')
             return 0;
         g++;
-        wholeDenominator(number, drob, g);
-        if (drob.m > drob.n)
+        wholeDenominator(number, drob, &g);
+        if (drob->m > drob->n)
             return 0;
-        drob.m+=(integerPart*drob.n);
+        (drob->m)+=(integerPart*(drob->n));
     }
     *i = g;
 }
 
-void isOrdinaryFraction(const char *number,fraction drob, long *i) // Для обыкновенной дроби
+void isOrdinaryFraction(const char *number,fraction *drob, long *i) // Для обыкновенной дроби
 {
  if (number[*i] == '/') wholeDenominator(number, drob, i);
 }
@@ -72,6 +74,12 @@ void skipingSpaces(const char *number, long *i)
     while ((g<strlen(number))&&(number[g]<=' ')) //пропуск пробелов
         g++;
     *i = g;
+}
+
+int checkingInput(const char *number, long i)
+{
+    if (((number[i]-'0') < 0)&& ((number[i]-'9') > 9)) return 0;
+    else return 1;
 }
 
 void signDefinition(const char *number, int *sign, long *i)
@@ -197,6 +205,13 @@ void reduction(fraction drob)
     drob.n/=divider;
 }
 
+void newNumber(char *number)
+{
+    puts("Ошибка ввода, введите рациональное число снова!");
+    number[0] = '\0';
+    gets(number);
+}
+
 void representationOfNumber()
 {
         char number[MAXSIZE];
@@ -206,42 +221,43 @@ void representationOfNumber()
     long i=0;//позиция каретки
     int sign = 1;
     drob.m = 0; //числитель
-    drob.n = 1; //знаменатель
+    drob.n = 0; //знаменатель
+    int errorsFlag = 0; //сообщение об ошибке
 
     do { //Этот кусок кода - тупо ввод обыкновенного числа
         skipingSpaces(number, &i);
         signDefinition(number, &sign, &i); //Определение знака
         wholeNumerator(number, &drob, &i); //Все числа изначально считываем как целые
+        if ((number[i] == '\0')) break;
         if (isAnotherSymbols(number, i))//Допустимы ли в воде следующие члены или попросить новый ввод
-        {
-                puts("Ошибка ввода, введите рациональное число снова!");
-                gets(number);
-        }
+            newNumber(number);
         else {
-            isOrdinaryFraction(number, drob, &i); //для обыкновенной дроби
-            if (!( isMixedFraction(number, drob, &i))) //для смешанной дроби))
+            if (!(isMixedFraction(number, &drob, &i))) //для смешанной дроби
+                newNumber(number); //сообщение об ошибке и ввод нового числа
+             else
             {
-                puts("Ошибка ввода, введите рациональное число снова!");
-                gets(number);
-            } else {
-                long realPart = isFiniteDecimalSequence(number, drob, &i); //конечная десятичная последовательность
-                if (!(isInfinitePeriodicFraction(number, drob, &i, realPart)))  //бесконечная периодическая дробь))
-                {
-                    puts("Ошибка ввода, введите рациональное число снова!");
-                    gets(number);
-                } else
-                {
-                    if (!(isMultiplicationAndDegree(number, drob, &i, realPart))) // когда задано в виде умножения на 10 в степени
-                    {
-                        puts("Ошибка ввода, введите рациональное число снова!");
-                        gets(number);
-                    } else {
-                        if (!(isExponentaStyle(number, drob, &i, realPart)))  // задание рационального числа через экспоненту
-                        {
-                            puts("Ошибка ввода, введите рациональное число снова!");
-                            gets(number);
+            isOrdinaryFraction(number, &drob, &i); //для обыкновенной дроби
+            if ((number[i] == '\0')) break;
+            else {
+                if (!(checkingInput(number, i)))
+                newNumber(number);
+                        else {
+                    long realPart = isFiniteDecimalSequence(number, drob, &i); //конечная десятичная последовательность
+                    if (!(isInfinitePeriodicFraction(number, drob, &i, realPart)))  //бесконечная периодическая дробь))
+
+                        newNumber(number);
+                    else {
+                        if (!(isMultiplicationAndDegree(number, drob, &i,
+                                                        realPart))) // когда задано в виде умножения на 10 в степени
+
+                            newNumber(number);
+                        else {
+                            if (!(isExponentaStyle(number, drob, &i,
+                                                   realPart)))  // задание рационального числа через экспоненту
+                                newNumber(number);
                         }
                     }
+                }
                 }
             }
         }
@@ -249,10 +265,13 @@ void representationOfNumber()
     while (number);
     reduction(drob);//Сокращние дроби
     drob.m*=sign; //Учтем знак перед числом
-    printf("%lo / %lo",drob.m,drob.n);
+    if (drob.n == 0) drob.n = 1; //натуральное
+    printf("%d/%d",drob.m,drob.n);
 }
 
 int main() {
+    SetConsoleCP(1251);
+    SetConsoleOutputCP(1251);
     representationOfNumber();
     return 0;
 }
