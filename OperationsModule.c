@@ -2,36 +2,41 @@
 #include <windows.h>
 #include <stdio.h>
 
-void enteringNumbers(char *number, fraction *a, fraction *b)
+char enteringNumbers(char *number, fraction *a, fraction *b)
 {
-    *a = input(number);
-    number[0] = '\0';
-    *b = input(number);
+    int i = 0;//РџРѕР·РёС†РёСЏ РєР°СЂРµС‚РєРё
+    gets(number);//РЎС‡РёС‚Р°РµРј РІС‹СЂР°Р¶РµРЅРёРµ
+    *a = input(number, &i); //РЎС‡РёС‚Р°РµРј 1 С‡РёСЃР»Рѕ
+    skipingSpaces(number, &i);//РџСЂРѕРїСѓСЃС‚РёРј РїСЂРѕР±РµР»С‹
+    char operation = number[i]; //РЎС‡РёС‚Р°РµРј РѕРїРµСЂР°С†РёСЋ
+    i++;
+    *b = input(number, &i); //РЎС‡РёС‚Р°РµРј 2 С‡РёСЃР»Рѕ
+    return operation;
 }
 
 void addition(fraction a, fraction b, fraction *result)
 {
-    result->n = a.n * b.n; // создаем общий знаменатель
+    result->n = a.n * b.n; // СЃРѕР·РґР°РµРј РѕР±С‰РёР№ Р·РЅР°РјРµРЅР°С‚РµР»СЊ
     a.m *=(result->n/a.n);
     b.m *=(result->n/b.n);
-    result->m = a.m + b.m; //после приведения к общему знаменателю можно сложить дроби
-    reduction(result);//Сокращние дроби
+    result->m = a.m + b.m; //РїРѕСЃР»Рµ РїСЂРёРІРµРґРµРЅРёСЏ Рє РѕР±С‰РµРјСѓ Р·РЅР°РјРµРЅР°С‚РµР»СЋ РјРѕР¶РЅРѕ СЃР»РѕР¶РёС‚СЊ РґСЂРѕР±Рё
+    reduction(result);//РЎРѕРєСЂР°С‰РЅРёРµ РґСЂРѕР±Рё
 }
 
 void subtraction(fraction a, fraction b, fraction *result)
 {
-    result->n = a.n * b.n; // создаем общий знаменатель
+    result->n = a.n * b.n; // СЃРѕР·РґР°РµРј РѕР±С‰РёР№ Р·РЅР°РјРµРЅР°С‚РµР»СЊ
     a.m *=(result->n/a.n);
     b.m *=(result->n/b.n);
-    result->m = a.m - b.m; //после приведения к общему знаменателю можно вычесть дроби
-    reduction(result);//Сокращние дроби
+    result->m = a.m - b.m; //РїРѕСЃР»Рµ РїСЂРёРІРµРґРµРЅРёСЏ Рє РѕР±С‰РµРјСѓ Р·РЅР°РјРµРЅР°С‚РµР»СЋ РјРѕР¶РЅРѕ РІС‹С‡РµСЃС‚СЊ РґСЂРѕР±Рё
+    reduction(result);//РЎРѕРєСЂР°С‰РЅРёРµ РґСЂРѕР±Рё
 }
 
 void multiplication(fraction a, fraction b, fraction *result)
 {
-    result->m = a.m * b.m; // перемножим числители дробей
-    result->n = a.n * b.n; // перемножим знаменатели дробей
-    reduction(result);//Сокращние дроби
+    result->m = a.m * b.m; // РїРµСЂРµРјРЅРѕР¶РёРј С‡РёСЃР»РёС‚РµР»Рё РґСЂРѕР±РµР№
+    result->n = a.n * b.n; // РїРµСЂРµРјРЅРѕР¶РёРј Р·РЅР°РјРµРЅР°С‚РµР»Рё РґСЂРѕР±РµР№
+    reduction(result);//РЎРѕРєСЂР°С‰РЅРёРµ РґСЂРѕР±Рё
 }
 
 void division(fraction a, fraction b, fraction *result)
@@ -42,9 +47,9 @@ void division(fraction a, fraction b, fraction *result)
     if (a.m > 0)
         if (b.m < 0) sign = -1;
 
-    result->m = sign * abs(a.m * b.n); //умножение числителя первой дроби со знаменателем второй
-   result->n = sign * abs(a.n * b.m); //умножение знаменателя первой дроби с числителем второй
-    reduction(result);//Сокращние дроби
+    result->m = sign * abs(a.m * b.n); //СѓРјРЅРѕР¶РµРЅРёРµ С‡РёСЃР»РёС‚РµР»СЏ РїРµСЂРІРѕР№ РґСЂРѕР±Рё СЃРѕ Р·РЅР°РјРµРЅР°С‚РµР»РµРј РІС‚РѕСЂРѕР№
+   result->n = sign * abs(a.n * b.m); //СѓРјРЅРѕР¶РµРЅРёРµ Р·РЅР°РјРµРЅР°С‚РµР»СЏ РїРµСЂРІРѕР№ РґСЂРѕР±Рё СЃ С‡РёСЃР»РёС‚РµР»РµРј РІС‚РѕСЂРѕР№
+    reduction(result);//РЎРѕРєСЂР°С‰РЅРёРµ РґСЂРѕР±Рё
 }
 
 
@@ -53,16 +58,27 @@ int main () {
     SetConsoleOutputCP(1251);
     char number[100];
     fraction a,b,result;
-    enteringNumbers(number, &a, &b);
+    char operationIs = enteringNumbers(number, &a, &b); //РќР°Р·РІР°РЅРёРµ РѕРїРµСЂР°С†РёРё
 
-      addition(a,b,&result);
-    printf("Результат сложения: %li/%li\n",result.m,result.n);
-      subtraction(a,b,&result);
-    printf("Результат вычитания: %li/%li\n",result.m,result.n);
-      multiplication(a,b,&result);
-    printf("Результат умножения: %li/%li\n",result.m,result.n);
-      division(a,b,&result);
-    printf("Результат деления: %li/%li",result.m,result.n);
+    switch (operationIs) { //Р’С‹Р±РѕСЂ РЅРµРѕР±С…РѕРґРёРјРѕР№ РѕРїРµСЂР°С†РёРё
+        case '+':
+            addition(a, b, &result);
+            printf("Р РµР·СѓР»СЊС‚Р°С‚ СЃР»РѕР¶РµРЅРёСЏ: %li/%li\n", result.m, result.n);
+            break;
+        case '-':
+            subtraction(a, b, &result);
+            printf("Р РµР·СѓР»СЊС‚Р°С‚ РІС‹С‡РёС‚Р°РЅРёСЏ: %li/%li\n", result.m, result.n);
+            break;
+        case '*':
+            multiplication(a, b, &result);
+            printf("Р РµР·СѓР»СЊС‚Р°С‚ СѓРјРЅРѕР¶РµРЅРёСЏ: %li/%li\n", result.m, result.n);
+            break;
+        case '/':
+            division(a, b, &result);
+            printf("Р РµР·СѓР»СЊС‚Р°С‚ РґРµР»РµРЅРёСЏ: %li/%li", result.m, result.n);
+            break;
+        default: puts("Р’С‹РїРѕР»РЅРµРЅРёРµ РѕРїРµСЂР°С†РёРё РЅРµРІРѕР·РјРѕР¶РЅРѕ");
+    }
 
     return 0;
 }
