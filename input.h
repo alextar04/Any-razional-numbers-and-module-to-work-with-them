@@ -2,11 +2,11 @@
 #define INPUT_RAZIONAL
 typedef struct fr
 {
-    long m;// числитель
-    long n;// знаменатель
+    long m;// С‡РёСЃР»РёС‚РµР»СЊ
+    long n;// Р·РЅР°РјРµРЅР°С‚РµР»СЊ
 }fraction;
 
-fraction input(char *number);
+fraction input(char *number, int *j);
 void wholeNumerator(const char *number, fraction *drob, long *i);
 void wholeDenominator(const char *number, fraction *drob, long *i);
 void skipingSpaces(const char *number, long *i);
