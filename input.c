@@ -46,7 +46,7 @@ void skipingSpaces(const char *number, long *i)
 
 int isAnotherSymbols(const char *number, long i)
 {
-    if ((number[i] != ' ')&&(number[i] != '\n')&&(number[i] != EOF) && (number[i] != 'e') && (number[i] != 'E') && (number[i] != '.') && (number[i] != ',') && (number[i] != '/'))
+    if ((number[i] != '+')&&(number[i] != '\n')&&(number[i] != EOF) && (number[i] != 'e') && (number[i] != 'E') && (number[i] != '.') && (number[i] != ',') && (number[i] != '/'))
         return 1;//Если постронний символ
     return 0;
 }
@@ -54,9 +54,10 @@ int isAnotherSymbols(const char *number, long i)
 int isMixedFraction(const char *number,fraction *drob, long *i, int *errorFlag)
 {
     long g = *i;
-    if (number[g] == ' ')
+    if (number[g] == '+')
     {
-        skipingSpaces(number, &g);
+        //skipingSpaces(number, &g);
+        g++;//Пропуск "плюса"
         if ((number[g]-'0'<0)||(number[g]-'0'>9)) {
             *errorFlag = 1;
             return 0;
@@ -280,7 +281,7 @@ fraction input(char *number)
     drob.n = 0; //знаменатель
     int errorFlag = 0; //сообщение об ошибке
 
-    do { //Этот кусок кода - тупо ввод обыкновенного числа
+    do { //Этот кусок кода - ввод обыкновенного числа
         skipingSpaces(number, &i);
         signDefinition(number, &sign, &i); //Определение знака
         wholeNumerator(number, &drob, &i); //Все числа изначально считываем как целые
