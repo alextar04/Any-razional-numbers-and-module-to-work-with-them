@@ -270,12 +270,10 @@ void newNumber(char *number)
     gets(number);
 }
 
-fraction input(char *number)
+fraction input(char *number, int *j)
 {
     fraction drob;
-    gets(number);
-
-    long i=0;//позиция каретки
+    long i = *j; //Позиция каретки
     int sign = 1;
     drob.m = 0; //числитель
     drob.n = 0; //знаменатель
@@ -285,38 +283,38 @@ fraction input(char *number)
         skipingSpaces(number, &i);
         signDefinition(number, &sign, &i); //Определение знака
         wholeNumerator(number, &drob, &i); //Все числа изначально считываем как целые
-        if ((number[i] == '\0')) break;
+        if ((number[i] == ' ') || (number[i] == '\0')) break;
         if (isAnotherSymbols(number, i))//Допустимы ли в воде следующие члены или попросить новый ввод
             newNumber(number);
         else {
             isMixedFraction(number, &drob, &i, &errorFlag); //для смешанной дроби
-            if ((number[i] == '\0')) break;
+            if ((number[i] == ' ')|| (number[i] == '\0')) break;
             if (errorFlag)
                 newNumber(number); //сообщение об ошибке и ввод нового числа
             else
             {
                 isOrdinaryFraction(number, &drob, &i); //для обыкновенной дроби
-                if ((number[i] == '\0')) break;
+                if ((number[i] == ' ')|| (number[i] == '\0')) break;
                 if (errorInput(number, i))
                     newNumber(number);
                 else {
                     long realPart = isFiniteDecimalSequence(number, &drob, &i); //конечная десятичная последовательность
-                    if ((number[i] == '\0')) break;
+                    if ((number[i] == ' ')|| (number[i] == '\0')) break;
                     if (errorInput1(number, i))
                         newNumber(number);
                     else
                     {
                         isInfinitePeriodicFraction(number, &drob, &i, realPart, &errorFlag); //бесконечная периодическая дробь
-                        if ((number[i] == '\0')) break;
+                        if ((number[i] == ' ')|| (number[i] == '\0')) break;
                         if (errorFlag)
                             newNumber(number);
                         else {
                             isMultiplicationAndDegree(number, &drob, &i, realPart, &errorFlag); // когда задано в виде умножения на 10 в степени
-                            if ((number[i] == '\0')) break;
+                            if ((number[i] == ' ')|| (number[i] == '\0')) break;
                             if (errorFlag) newNumber(number);
                             else {
                                 isExponentaStyle(number, &drob, &i, realPart, &errorFlag);  // задание рационального числа через экспоненту
-                                if ((number[i] == '\0')) break;
+                                if ((number[i] == ' ')|| (number[i] == '\0')) break;
                                 if (errorFlag)
                                     newNumber(number);
                             }
@@ -329,5 +327,6 @@ fraction input(char *number)
     while (number);
     drob.m*=sign; //Учтем знак перед числом
     if (drob.n == 0) drob.n = 1; //натуральное
+    *j = i; //Вернем позицию каретки
     return drob;
 }
