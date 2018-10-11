@@ -7,7 +7,9 @@ void consoleOrTxtInput(char *number){
     int choose;
     scanf("%d", &choose);
     if (choose == 1){ //Считаем с клавиатуры
+        fflush(stdin);
         gets(number);
+        //scanf("%s", number);
     } else { //Считаем с файла
         FILE* fp = fopen("C:\\Users\\AT\\CLionProjects\\KoursWork\\input.txt", "rb");//Открываем на чтение
         if (fp == NULL)
