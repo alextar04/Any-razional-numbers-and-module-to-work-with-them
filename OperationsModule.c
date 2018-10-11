@@ -2,10 +2,27 @@
 #include <windows.h>
 #include <stdio.h>
 
+void consoleOrTxtInput(char *number){
+    puts("Выберите 1 - для ввода с клавиатуры, 2 - для ввода с файла");
+    int choose;
+    scanf("%d", &choose);
+    if (choose == 1){ //Считаем с клавиатуры
+        gets(number);
+    } else { //Считаем с файла
+        FILE* fp = fopen("C:\\Users\\AT\\CLionProjects\\KoursWork\\input.txt", "rb");//Открываем на чтение
+        if (fp == NULL)
+            puts("Ошибка открытия файла");
+        fgets(number, 100,fp);
+        fclose(fp);
+    }
+}
+
+
 char enteringNumbers(char *number, fraction *a, fraction *b)
 {
     int i = 0;//Позиция каретки
-    gets(number);//Считаем выражение
+    consoleOrTxtInput(number);//Считываем с клавиатуры или Файла
+    //gets(number);//Считаем выражение
     *a = input(number, &i); //Считаем 1 число
     skipingSpaces(number, &i);//Пропустим пробелы
     char operation = number[i]; //Считаем операцию
