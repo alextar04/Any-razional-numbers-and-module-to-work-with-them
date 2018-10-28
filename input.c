@@ -5,18 +5,12 @@
 #include <conio.h>
 #include "input.h"
 
-#define MAXSIZE 100
-/*typedef struct fr
-{
-    long m;// С‡РёСЃР»РёС‚РµР»СЊ
-    long n;// Р·РЅР°РјРµРЅР°С‚РµР»СЊ
-}fraction;*/
 
-void wholeNumerator(const char *number, fraction *drob, long *i) //С„РѕСЂРјРёСЂРѕРІР°РЅРёРµ С‡РёСЃР»РёС‚РµР»СЏ only
+void wholeNumerator(const char *number, fraction *drob, long *i) //формирование числителя only
 {
     long j = *i;
 
-    while(((number[j]-'0') >= 0)&&((number[j]-'0') <= 9)) //РїРµСЂРµРІРѕРґ СЃС‚СЂРѕРєРё РІ С‡РёСЃР»Рѕ
+    while((j < strlen(number))&&((number[j]-'0') >= 0)&&((number[j]-'0') <= 9)) //перевод строки в число
     {
         drob->m = (drob->m)*10 + (number[j]-'0');
         j++;
@@ -24,11 +18,11 @@ void wholeNumerator(const char *number, fraction *drob, long *i) //С„РѕСЂРјРёСЂР
     *i = j;
 }
 
-void wholeDenominator(const char *number, fraction *drob, long *i) //С„РѕСЂРјРёСЂРѕРІР°РЅРёРµ Р·РЅР°РјРµРЅС‚РµР»СЏ only
+void wholeDenominator(const char *number, fraction *drob, long *i) //формирование знаментеля only
 {
     long j = *i;
 
-    while(((number[j]-'0') >= 0)&&((number[j]-'0') <= 9)) //РїРµСЂРµРІРѕРґ СЃС‚СЂРѕРєРё РІ С‡РёСЃР»Рѕ
+    while(((number[j]-'0') >= 0)&&((number[j]-'0') <= 9)) //перевод строки в число
     {
         drob->n = (drob->n)*10 + (number[j]-'0');
         j++;
@@ -39,68 +33,43 @@ void wholeDenominator(const char *number, fraction *drob, long *i) //С„РѕСЂРјРёС
 void skipingSpaces(const char *number, long *i)
 {
     long g = *i;
-    while ((g<strlen(number))&&(number[g]<=' ')) //РїСЂРѕРїСѓСЃРє РїСЂРѕР±РµР»РѕРІ
+    while ((g<strlen(number))&&(number[g]<=' ')) //пропуск пробелов
         g++;
     *i = g;
 }
 
-int isAnotherSymbols(const char *number, long i)
-{
-    if ((number[i] != '+')&&(number[i] != '\n')&&(number[i] != EOF) && (number[i] != 'e') && (number[i] != 'E') && (number[i] != '.') && (number[i] != ',') && (number[i] != '/'))
-        return 1;//Р•СЃР»Рё РїРѕСЃС‚СЂРѕРЅРЅРёР№ СЃРёРјРІРѕР»
-    return 0;
-}
 
-int isMixedFraction(const char *number,fraction *drob, long *i, int *errorFlag)
+int isMixedFraction(const char *number,fraction *drob, long *i)
 {
     long g = *i;
+    wholeNumerator(number, drob, &g);
     if (number[g] == '+')
     {
-        //skipingSpaces(number, &g);
-        g++;//РџСЂРѕРїСѓСЃРє "РїР»СЋСЃР°"
-        if ((number[g]-'0'<0)||(number[g]-'0'>9)) {
-            *errorFlag = 1;
-            return 0;
-        }
+        g++;//Пропуск "плюса"
         long integerPart = drob->m;
         drob->m = 0;
-        wholeNumerator(number, drob, &g); //РєР°Рє С†РµР»С‹Рµ
-        if (number[g] != '/') {
-            *errorFlag = 1;
-            return 0;
-        }
+        wholeNumerator(number, drob, &g); //как целые
+
+        //Считывание части после '/'
         g++;
         wholeDenominator(number, drob, &g);
         if (drob->m > drob->n) {
-            *errorFlag = 1;
-            return 0;
+            return -1;
         }
         (drob->m)+=(integerPart*(drob->n));
     }
     *i = g;
 }
 
-void isOrdinaryFraction(const char *number,fraction *drob, long *i) // Р”Р»СЏ РѕР±С‹РєРЅРѕРІРµРЅРЅРѕР№ РґСЂРѕР±Рё
+void isOrdinaryFraction(const char *number,fraction *drob, long *i) // Для обыкновенной дроби
 {
-    if (number[*i] == '/')
-    { int j = *i;
-        j++;
-        *i=j;
-        wholeDenominator(number, drob, i);
-    }
+    long j = *i;
+    wholeNumerator(number, drob, &j);
+    //Пропуск '/'
+    j++;
+    wholeDenominator(number, drob, &j);
 }
 
-int errorInput(const char *number, long i)
-{
-    if ((number[i] != '.')&&(number[i] != ',')) return 1;
-    else return 0;
-}
-
-int errorInput1(const char *number, long i)
-{
-    if ((number[i] != '(')&&(number[i] != 'e')&&(number[i] != 'E')&&(number[i] != '*')) return 1;
-    else return 0;
-}
 
 void signDefinition(const char *number, int *sign, long *i)
 {
@@ -112,15 +81,16 @@ void signDefinition(const char *number, int *sign, long *i)
     *i = j;
 }
 
-long isFiniteDecimalSequence(const char *number, fraction *drob, long *i) //РєРѕРЅРµС‡РЅР°СЏ РґРµСЃСЏС‚РёС‡РЅР°СЏ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕСЃС‚СЊ
+void isFiniteDecimalSequence(const char *number, fraction *drob, long *i) //конечная десятичная последовательность
 {
     long j = *i;
+    wholeNumerator(number, drob, &j);
     long integerPart = drob->m;
     drob->m = 0;
     long realPart=0;
     if ((number[j] == '.')||(number[j] == ','))
     {
-        long jOld = j; //СЃС‚Р°СЂРѕРµ j С‡С‚РѕР±С‹ СѓР·РЅР°С‚СЊ Р·РЅР°РјРµРЅР°С‚РµР»СЊ
+        long jOld = j; //старое j, чтобы узнать знаменатель
         j++;
         wholeNumerator(number, drob, &j);
         double denominator = pow(10 , (j - jOld-1));
@@ -129,7 +99,6 @@ long isFiniteDecimalSequence(const char *number, fraction *drob, long *i) //РєРѕ
         drob->n = (long)denominator;
     }
     *i = j;
-    return realPart;
 }
 
 int numberOfDigits(long difference)
@@ -144,19 +113,24 @@ int numberOfDigits(long difference)
     return count;
 }
 
-int isInfinitePeriodicFraction(const char *number, fraction *drob, long *i, long realPart, int *errorFlag) {
+void isInfinitePeriodicFraction(const char *number, fraction *drob, long *i) {
     long j = *i;
     long period = 0;
+
+    wholeNumerator(number, drob, &j);
+    //Пропуск '.'
+    j++;
+    //Считываем часть после '.'
+    wholeDenominator(number, drob, &j);
+    long realPart = drob->n;
+
     long jOld = j;
     if (number[j++] == '(') {
-        while (((number[j] - '0') >= 0) && ((number[j] - '0') <= 9)) {
+        while (number[j]!=')') {
             period = period * 10 + (number[j] - '0');
             j++;
         }
-        if (number[j] != ')') {
-            *errorFlag = 1;
-            return 0;//РїРѕРїСЂРѕСЃРёС‚СЊ РЅРѕРІС‹Р№ РІРІРѕРґ
-        }
+
         long naturalCount = (long) pow(10, (j - jOld - 1)) * realPart + period;
         long difference = naturalCount - realPart;
         long newDenominator = 0;
@@ -167,51 +141,21 @@ int isInfinitePeriodicFraction(const char *number, fraction *drob, long *i, long
         int countDen = numberOfDigits(newDenominator);
         for (int q=countDen; q<countDif; q++)
             newDenominator *=10;
-        drob->m = ((drob->m - realPart) / drob->n) * newDenominator + difference;
+        drob->m = drob->m * newDenominator + difference;
         drob->n = newDenominator;
         j++;
     }
     *i = j;
 }
 
-int isMultiplicationAndDegree(const char *number, fraction *drob, long *i, long realPart, int *errorFlag)
-{
-    skipingSpaces(number, i);
-    long j = *i;
-    int degree=0;
-    j--;
-    if (number[j] == '*') {
-        skipingSpaces(number, &j);
-        j++;
-        if ((number[j] != '1') && (number[j + 1] != '0')) {
-            *errorFlag = 1;
-            return 0;
-        }
 
-        j += 2;
-        int sign;
-        if (number[j]== '+') sign = 1;
-        else sign = -1;
-        if ((number[j] != '-') && (number[j] != '+')) {
-            *errorFlag = 1;
-            return 0;
-        }
-        j++;
-        while (((number[j] - '0') >= 0) && ((number[j] - '0') <= 9)) //РїРµСЂРµРІРѕРґ СЃС‚СЂРѕРєРё РІ С‡РёСЃР»Рѕ
-        {
-            degree = degree * 10 + (number[j] - '0');
-            j++;
-        }
-        double multiplier = pow(10,degree);
-        if (sign == -1) (drob->n) *= multiplier;
-        else (drob->m) *= multiplier;
-    }
-    *i = j;
-}
-
-int isExponentaStyle(const char *number, fraction *drob, long *i, long realPart, int *errorFlag)
+void isExponentaStyle(const char *number, fraction *drob, long *i)
 {
     long j = *i;
+    wholeNumerator(number, drob, &j);
+    //Пропуск '.'
+    j++;
+    wholeDenominator(number, drob, &j);
     if ((number[j] == 'e')||(number[j]=='E')) {
         j++;
         long degree = 0;
@@ -227,23 +171,15 @@ int isExponentaStyle(const char *number, fraction *drob, long *i, long realPart,
             degree = degree * 10 + (number[j] - '0');
             j++;
         }
-        if (number[j] != '\0') //РѕС€РёР±РєР° РІРІРѕРґР°, РєР°РєРёРµ С‚Рѕ СЃС‚РѕСЂРѕРЅРЅРёРµ СЃРёРјРІРѕР»С‹
-        {
-            *errorFlag = 1;
-            return 1;
-        }
 
         double multiplier = pow(10, degree);
         if (sign < 0) drob->n*=multiplier;
         else drob->m*=multiplier;
-    } else {
-        *errorFlag = 1;
-        return 1;
     }
     *i = j;
 }
 
-int nod(fraction drob) //РС‰РµРј РќРћР” РїРѕ Р°Р»РіРѕСЂРёС‚РјСѓ Р•РІРєР»РёРґР°
+int nod(fraction drob) //Ищем НОД по алгоритму Евклида
 {
     int a = drob.m;
     int b = drob.n;
@@ -265,68 +201,102 @@ void reduction(fraction *drob)
 
 void newNumber(char *number)
 {
-    puts("РћС€РёР±РєР° РІРІРѕРґР°, РІРІРµРґРёС‚Рµ СЂР°С†РёРѕРЅР°Р»СЊРЅРѕРµ С‡РёСЃР»Рѕ СЃРЅРѕРІР°!");
+    puts("Ошибка ввода, введите рациональное число снова!");
+    printf("%s - не рациональное число!", number);
     number[0] = '\0';
     gets(number);
 }
 
-fraction input(char *number, int *j)
-{
-    fraction drob;
-    long i = *j; //РџРѕР·РёС†РёСЏ РєР°СЂРµС‚РєРё
-    int sign = 1;
-    drob.m = 0; //С‡РёСЃР»РёС‚РµР»СЊ
-    drob.n = 0; //Р·РЅР°РјРµРЅР°С‚РµР»СЊ
-    int errorFlag = 0; //СЃРѕРѕР±С‰РµРЅРёРµ РѕР± РѕС€РёР±РєРµ
+void intPart(const char *number, long *i){
+    long j = *i;
+    int len = strlen(number);
+    while((j<len)&&((number[j]-'0') >= 0)&&((number[j]-'0') <= 9)) //перевод строки в число
+        j++;
+    *i = j;
+}
 
-    do { //Р­С‚РѕС‚ РєСѓСЃРѕРє РєРѕРґР° - РІРІРѕРґ РѕР±С‹РєРЅРѕРІРµРЅРЅРѕРіРѕ С‡РёСЃР»Р°
-        skipingSpaces(number, &i);
-        signDefinition(number, &sign, &i); //РћРїСЂРµРґРµР»РµРЅРёРµ Р·РЅР°РєР°
-        wholeNumerator(number, &drob, &i); //Р’СЃРµ С‡РёСЃР»Р° РёР·РЅР°С‡Р°Р»СЊРЅРѕ СЃС‡РёС‚С‹РІР°РµРј РєР°Рє С†РµР»С‹Рµ
-        if ((number[i] == ' ') || (number[i] == '\0')) break;
-        if (isAnotherSymbols(number, i))//Р”РѕРїСѓСЃС‚РёРјС‹ Р»Рё РІ РІРѕРґРµ СЃР»РµРґСѓСЋС‰РёРµ С‡Р»РµРЅС‹ РёР»Рё РїРѕРїСЂРѕСЃРёС‚СЊ РЅРѕРІС‹Р№ РІРІРѕРґ
-            newNumber(number);
-        else {
-            isMixedFraction(number, &drob, &i, &errorFlag); //РґР»СЏ СЃРјРµС€Р°РЅРЅРѕР№ РґСЂРѕР±Рё
-            if ((number[i] == ' ')|| (number[i] == '\0')) break;
-            if (errorFlag)
-                newNumber(number); //СЃРѕРѕР±С‰РµРЅРёРµ РѕР± РѕС€РёР±РєРµ Рё РІРІРѕРґ РЅРѕРІРѕРіРѕ С‡РёСЃР»Р°
-            else
-            {
-                isOrdinaryFraction(number, &drob, &i); //РґР»СЏ РѕР±С‹РєРЅРѕРІРµРЅРЅРѕР№ РґСЂРѕР±Рё
-                if ((number[i] == ' ')|| (number[i] == '\0')) break;
-                if (errorInput(number, i))
-                    newNumber(number);
-                else {
-                    long realPart = isFiniteDecimalSequence(number, &drob, &i); //РєРѕРЅРµС‡РЅР°СЏ РґРµСЃСЏС‚РёС‡РЅР°СЏ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕСЃС‚СЊ
-                    if ((number[i] == ' ')|| (number[i] == '\0')) break;
-                    if (errorInput1(number, i))
-                        newNumber(number);
-                    else
-                    {
-                        isInfinitePeriodicFraction(number, &drob, &i, realPart, &errorFlag); //Р±РµСЃРєРѕРЅРµС‡РЅР°СЏ РїРµСЂРёРѕРґРёС‡РµСЃРєР°СЏ РґСЂРѕР±СЊ
-                        if ((number[i] == ' ')|| (number[i] == '\0')) break;
-                        if (errorFlag)
-                            newNumber(number);
-                        else {
-                            isMultiplicationAndDegree(number, &drob, &i, realPart, &errorFlag); // РєРѕРіРґР° Р·Р°РґР°РЅРѕ РІ РІРёРґРµ СѓРјРЅРѕР¶РµРЅРёСЏ РЅР° 10 РІ СЃС‚РµРїРµРЅРё
-                            if ((number[i] == ' ')|| (number[i] == '\0')) break;
-                            if (errorFlag) newNumber(number);
-                            else {
-                                isExponentaStyle(number, &drob, &i, realPart, &errorFlag);  // Р·Р°РґР°РЅРёРµ СЂР°С†РёРѕРЅР°Р»СЊРЅРѕРіРѕ С‡РёСЃР»Р° С‡РµСЂРµР· СЌРєСЃРїРѕРЅРµРЅС‚Сѓ
-                                if ((number[i] == ' ')|| (number[i] == '\0')) break;
-                                if (errorFlag)
-                                    newNumber(number);
-                            }
-                        }
-                    }
+int typeNumber(const char *number, long i){
+    long j = i;
+    int len = strlen(number);//Длина числа
+
+    intPart(number, &j);
+    if (j == len) return 1; //Тип числа - целое(натуральное)
+
+    if (number[j] == '/'){
+        j++;
+        intPart(number, &j);
+        if (j == len) return 2; //Тип числа - обыкновенная дробь
+    }
+
+    if (number[j] == '+'){
+        j++;
+        intPart(number, &j);
+        if (number[j] == '/'){
+            j++;
+            intPart(number, &j);
+            if (j == len) return 3; //Тип числа - Смешанная дробь
+        }
+    }
+
+    if (number[j] == '.'){
+        j++;
+        intPart(number, &j);
+        if (j == len) return 4; //Тип числа - конечная десятичная последовательность
+        else{
+            if (number[j] == '('){
+                j++;
+                intPart(number, &j);
+                if (number[j] == ')') return 5;//Тип числа - бесконечная периодическая дробь
+            } else{
+                if ((number[j] == 'e') || (number[j] == 'E')){
+                    j++;
+                    if ((number[j] == '+') || (number[j] == '-'))
+                        j++;
+                    intPart(number, &j);
+                    if (j == len) return 6; //Тип числа - рациональное число, заданное через E(e)
                 }
             }
         }
     }
-    while (number);
-    drob.m*=sign; //РЈС‡С‚РµРј Р·РЅР°Рє РїРµСЂРµРґ С‡РёСЃР»РѕРј
-    if (drob.n == 0) drob.n = 1; //РЅР°С‚СѓСЂР°Р»СЊРЅРѕРµ
-    *j = i; //Р’РµСЂРЅРµРј РїРѕР·РёС†РёСЋ РєР°СЂРµС‚РєРё
+    return -1; //Ошибка ввода
+}
+
+fraction input(char *number) {
+    fraction drob;
+    drob.m = 0; //числитель
+    drob.n = 0; //знаменатель
+
+    long i = 0; //Позиция каретки
+    int sign = 1;
+    skipingSpaces(number, &i);
+    signDefinition(number, &sign, &i); //Определение знака
+
+    int errorFlag = 0; //сообщение об ошибке
+    int type = typeNumber(number, i);
+    switch (type) {
+        case 1:
+            wholeNumerator(number, &drob, &i);
+            break;
+        case 2:
+            isOrdinaryFraction(number, &drob, &i);
+            break;
+        case 3:
+            isMixedFraction(number, &drob, &i);
+            break;
+        case 4:
+            isFiniteDecimalSequence(number, &drob, &i);
+            break;
+        case 5:
+            isInfinitePeriodicFraction(number, &drob, &i);
+            break;
+        case 6:
+            isExponentaStyle(number, &drob, &i);
+            break;
+        default:
+            newNumber(number);
+            break;
+    }
+    drob.m *= sign; //Учтем знак перед числом
+    if (drob.n == 0) drob.n = 1;
     return drob;
 }
