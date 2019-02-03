@@ -5,7 +5,7 @@
 typedef struct fr
 {
     long m;// числитель
-    long n;// знаменатель
+    unsigned long n;// знаменатель
 }fraction;
 
 fraction input(char *number);
@@ -19,9 +19,9 @@ void isFiniteDecimalSequence(const char *number, fraction *drob, long *i);
 int numberOfDigits(long difference);
 void isInfinitePeriodicFraction(const char *number, fraction *drob, long *i);
 void isExponentaStyle(const char *number, fraction *drob, long *i);
-int nod(fraction drob);
+int nod(long a, long b);
 void reduction(fraction *drob);
 void newNumber(char *number);
 
 
-#endif // INPUT_RAZIONAL
+#endif // INPUT_RAZIONA
