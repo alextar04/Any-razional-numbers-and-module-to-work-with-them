@@ -6,16 +6,7 @@
 #include "input.h"
 #include "OperationsModule.h"
 #include "GaussSlau.h"
-typedef char num[100];
-
-void output(num **matr, int countStrings, int countColumns){
-    for (int i=0; i<countStrings; i++){
-        for (int j=0; j<countColumns; j++){
-            printf("%s  ", matr[i][j]);
-        }
-        printf("\n");
-    }
-}
+typedef char *num;
 
 void output1(fraction **matr, int countStrings, int countColumns){
     for (int i=0; i<countStrings; i++){
@@ -26,53 +17,75 @@ void output1(fraction **matr, int countStrings, int countColumns){
     }
 }
 
-void consoleOrTxtInput(int choose, num **matrS, int countStrings, int countColumns){
-    if (choose == 1){ //Считаем с клавиатуры
+int consoleOrTxtInput(int choose, fraction **matrF){
+
+    if (choose == 1){ //РЎС‡РёС‚Р°РµРј СЃ РєР»Р°РІРёР°С‚СѓСЂС‹
         fflush(stdin);
-        puts("Введите коэфициенты уравнений со свободными членами: ");
+        puts("Р’РІРµРґРёС‚Рµ С‡РёСЃР»Рѕ РЅРµРёР·РІРµСЃС‚РЅС‹С…: ");
+        int countStrings, countColumns;
+        scanf("%d", &countStrings);
+        countColumns = countStrings + 1;
+
+        puts("Р’РІРµРґРёС‚Рµ РєРѕСЌС„РёС†РёРµРЅС‚С‹ СѓСЂР°РІРЅРµРЅРёР№ СЃРѕ СЃРІРѕР±РѕРґРЅС‹РјРё С‡Р»РµРЅР°РјРё: ");
         for (int i = 0; i<countStrings; i++){
             for (int j = 0; j<countColumns; j++){
-                scanf("%s", &matrS[i][j]); //т.r scanf считывает до пробела
+                num *temp = (num *)malloc(100 * sizeof(char));
+                scanf("%s", temp); //С‚.r scanf СЃС‡РёС‚С‹РІР°РµС‚ РґРѕ РїСЂРѕР±РµР»Р°
+                matrF[i][j] = input(temp);
+                reduction(&matrF[i][j]);
             }
         }
-    } else { //Считаем с файла
-        FILE* fp = fopen("C:\\Users\\AT\\CLionProjects\\RazionalSlau\\input.txt", "rb");//Открываем на чтение
-        for (int i = 0; i<countStrings; i++) {
+        return countStrings;
+
+    } else { //РЎС‡РёС‚Р°РµРј СЃ С„Р°Р№Р»Р°
+        FILE* fp = fopen("test.txt", "rb");//РћС‚РєСЂС‹РІР°РµРј РЅР° С‡С‚РµРЅРёРµ
+        if (fp == NULL){
+            puts("РћС€РёР±РєР° РѕС‚РєСЂС‹С‚РёСЏ С„Р°Р№Р»Р°");
+            return 0;
+        }
+
+        int j_1 = 0;
+        char a;
+        a = getc(fp);
+        fseek(fp, 0,0);
+        while (a != '\r'){
+            num *temp = (num *)malloc(100 * sizeof(char));
+            fscanf(fp, "%s", temp);
+            matrF[0][j_1] = input(temp);
+            reduction(&matrF[0][j_1]);
+            j_1++;
+            a = getc(fp);
+        };
+        int countStrings = j_1 - 1;
+        int countColumns = j_1;
+
+        for (int i = 1; i<countStrings; i++) {
             for (int j = 0; j < countColumns; j++) {
-                fscanf(fp, "%s", &matrS[i][j]); //т.r scanf считывает до пробела
+                num *temp = (num *)malloc(100 * sizeof(char));
+                fscanf(fp, "%s", temp); //С‚.r scanf СЃС‡РёС‚С‹РІР°РµС‚ РґРѕ РїСЂРѕР±РµР»Р°
+                matrF[i][j] = input(temp);
+                reduction(&matrF[i][j]);
             }
-            fseek(fp, 1, SEEK_CUR); //переход на новую строку
+            fseek(fp, 1, SEEK_CUR); //РїРµСЂРµС…РѕРґ РЅР° РЅРѕРІСѓСЋ СЃС‚СЂРѕРєСѓ
         }
         fclose(fp);
+        return countStrings;
     }
 }
 
-void matrStrings(num** matrS,int countStrings, int countColumns){
-    //Заполним матрицу
-    puts("Выберите 1 - для ввода с клавиатуры, 2 - для ввода с файла");
+int matrFractions(fraction** matrF){
+    //Р—Р°РїРѕР»РЅРёРј РјР°С‚СЂРёС†Сѓ
+    puts("Р’С‹Р±РµСЂРёС‚Рµ 1 - РґР»СЏ РІРІРѕРґР° СЃ РєР»Р°РІРёР°С‚СѓСЂС‹, 2 - РґР»СЏ РІРІРѕРґР° СЃ С„Р°Р№Р»Р°");
     int choose;
     scanf("%d", &choose);
-    consoleOrTxtInput(choose, matrS, countStrings, countColumns);
+    int size = consoleOrTxtInput(choose, matrF);
+    return size;
 }
 
-fraction** matrFractions(num** matrS, int countStrings, int countColumns){ //Получение матрицы дробей
-    fraction **matrF = (fraction **)malloc(countStrings * sizeof(fraction*)); //Матрица дробей
-    for (int row = 0; row < countStrings; row++) {
-        matrF[row] = (fraction *)malloc(countColumns * sizeof(fraction));
-    }
 
-    for (int i=0; i<countStrings; i++){
-        for (int j=0; j<countColumns; j++) {
-            matrF[i][j] = input((matrS[i][j]));
-            reduction(&matrF[i][j]);
-        }
-    }
-    return matrF;
-}
-
-int compare(fraction a, fraction max){ //Сравнение дробей
+int compare(fraction a, fraction max){ //РЎСЂР°РІРЅРµРЅРёРµ РґСЂРѕР±РµР№
     fraction result;
-    result.n = a.n * max.n; // создаем общий знаменатель
+    result.n = a.n * max.n; // СЃРѕР·РґР°РµРј РѕР±С‰РёР№ Р·РЅР°РјРµРЅР°С‚РµР»СЊ
     a.m *=(result.n/a.n);
     max.m *=(result.n/max.n);
     return (a.m > max.m)?1:0;
@@ -100,16 +113,21 @@ int searchColMaxElem(fraction **matr, int k, int countStrings){
         swapString(&(matr[iMax]), &(matr[k]));
         return 1;
     }
-    return 0; //Нет обмена строк
+    return 0; //РќРµС‚ РѕР±РјРµРЅР° СЃС‚СЂРѕРє
 }
 
 int directGauss(fraction **matr, int countStrings, int countColumns){
-    int count = 0; //Количество реальных перестановок
-    for (int k = 0; k<(countStrings-1);k++){ //Выполняется n-1 раз
+    int count = 0; //РљРѕР»РёС‡РµСЃС‚РІРѕ СЂРµР°Р»СЊРЅС‹С… РїРµСЂРµСЃС‚Р°РЅРѕРІРѕРє
+    for (int k = 0; k<(countStrings-1);k++){ //Р’С‹РїРѕР»РЅСЏРµС‚СЃСЏ n-1 СЂР°Р·
         int res = searchColMaxElem(matr, k, countStrings);
-        if (res) count++; //Увеличивается количество реальных перестановок
+        if (res) count++; //РЈРІРµР»РёС‡РёРІР°РµС‚СЃСЏ РєРѕР»РёС‡РµСЃС‚РІРѕ СЂРµР°Р»СЊРЅС‹С… РїРµСЂРµСЃС‚Р°РЅРѕРІРѕРє
         for (int i=k+1; i<countStrings; i++) {
-            fraction multipilersStep = division(matr[i][k], matr[k][k]);
+            fraction temp = matr[k][k];
+            if (matr[k][k].m == 0){
+                temp.m = 1;
+                temp.n = 1;
+            }
+            fraction multipilersStep = division(matr[i][k], temp);
             reduction(&multipilersStep);
             multipilersStep.m *= -1;
             for (int j = k; j < countColumns; j++) {
@@ -126,7 +144,7 @@ int directGauss(fraction **matr, int countStrings, int countColumns){
 fraction summa(fraction **matr, int k, fraction *x, int countStrings){
     fraction sum;
     sum.m = 0;
-    sum.n = 1; //Инициализация суммы
+    sum.n = 1; //РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ СЃСѓРјРјС‹
     for (int j=k+1; j<countStrings; j++){
         fraction arg1 = multiplication(matr[k][j], x[j]);
         reduction(&arg1);
@@ -138,7 +156,7 @@ fraction summa(fraction **matr, int k, fraction *x, int countStrings){
 }
 
 fraction* reverseGauss(fraction **matr, int countStrings, int countColumns){
-    fraction *x = (fraction *)malloc(countStrings * sizeof(fraction)); //Массив дробей(ответ)
+    fraction *x = (fraction *)malloc(countStrings * sizeof(fraction)); //РњР°СЃСЃРёРІ РґСЂРѕР±РµР№(РѕС‚РІРµС‚)
     int i = 0;
     for (int k=countStrings-1; k >= 0; --k){
         fraction sum = summa(matr, k, x, countStrings);
@@ -150,14 +168,43 @@ fraction* reverseGauss(fraction **matr, int countStrings, int countColumns){
     return x;
 }
 
+void reverseGaussMuchSolving(fraction **matr, int countStrings, int countColumns){
+    fraction *result;
+    result = (fraction *)malloc(countStrings * sizeof(fraction)); //РњР°СЃСЃРёРІ РґСЂРѕР±РµР№(РѕС‚РІРµС‚)
+
+    int k = countStrings-1;
+    while(matr[k][k].m == 0){
+        matr[k][k].m = 1;
+        matr[k][countColumns-1].m = 1;
+        k--;
+    }
+
+
+    result = reverseGauss(matr, countStrings, countColumns); //РћР±СЂР°С‚РЅС‹Р№ С…РѕРґ РјРµС‚РѕРґР° Р“Р°СѓСЃСЃР°
+    puts("Р§Р°СЃС‚РЅРѕРµ СЂРµС€РµРЅРёРµ РЎР»Р°Сѓ: ");
+    for (int i=0; i<countStrings; i++) //Р’С‹РІРѕРґ СЂРµС€РµРЅРёСЏ
+        printf("x%d = %li/%li  \n", i+1, result[i].m, result[i].n);
+
+}
+
+
 void solvingSlau(fraction **matr, int countStrings, int countColumns){
     fraction *result;
-    result = (fraction *)malloc(countStrings * sizeof(fraction)); //Массив дробей(ответ)
-    directGauss(matr, countStrings, countColumns); //Прямой ход метода Гаусса
-    puts("Результат прямого хода Гаусса ");
+    result = (fraction *)malloc(countStrings * sizeof(fraction)); //РњР°СЃСЃРёРІ РґСЂРѕР±РµР№(РѕС‚РІРµС‚)
+    directGauss(matr, countStrings, countColumns); //РџСЂСЏРјРѕР№ С…РѕРґ РјРµС‚РѕРґР° Р“Р°СѓСЃСЃР°
+    puts("Р РµР·СѓР»СЊС‚Р°С‚ РїСЂСЏРјРѕРіРѕ С…РѕРґР° Р“Р°СѓСЃСЃР° ");
     output1(matr, countStrings, countColumns);
-    result = reverseGauss(matr, countStrings, countColumns); //Обратный ход метода Гаусса
-    puts("Решение Слау: ");
-    for (int i=0; i<countStrings; i++) //Вывод решения
-        printf("%li/%li  ", result[i].m, result[i].n);
+    if ((matr[countStrings-1][countColumns-2].m == 0)&&(matr[countStrings-1][countColumns-1].m != 0)){
+        puts("РЎРёСЃС‚РµРјР° РЅРµ РёРјРµРµС‚ СЂРµС€РµРЅРёР№!");
+        return;
+    }
+    if ((matr[countStrings-1][countColumns-2].m == 0)&&(matr[countStrings-1][countColumns-1].m == 0)){
+        puts("РЎРёСЃС‚РµРјР° РёРјРµРµС‚ Р±РµСЃРєРѕРЅРµС‡РЅРѕРµ С‡РёСЃР»Рѕ СЂРµС€РµРЅРёР№ ");
+        reverseGaussMuchSolving(matr, countStrings,countColumns);
+        return;
+    }
+    result = reverseGauss(matr, countStrings, countColumns); //РћР±СЂР°С‚РЅС‹Р№ С…РѕРґ РјРµС‚РѕРґР° Р“Р°СѓСЃСЃР°
+    puts("Р РµС€РµРЅРёРµ РЎР»Р°Сѓ: ");
+    for (int i=0; i<countStrings; i++) //Р’С‹РІРѕРґ СЂРµС€РµРЅРёСЏ
+        printf("x%d = %li/%li  ", i+1, result[i].m, result[i].n);
 }
