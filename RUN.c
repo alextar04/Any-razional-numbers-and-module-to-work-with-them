@@ -6,32 +6,28 @@
 #include "input.h"
 #include "OperationsModule.h"
 #include "GaussSlau.h"
-typedef char num[100];
+typedef char *num;
+#define MAXSIZE 100
 
 int main(){
     SetConsoleCP(1251);
     SetConsoleOutputCP(1251);
-    puts("Введите количество неизвестных: ");
-    int countStrings;
-    scanf("%d", &countStrings);
-    int countColumns;
-    countColumns=countStrings+1;
 
-    num **matrBuf = (num **)malloc(countStrings * sizeof(num*));
-    for (int row = 0; row < countStrings; row++) {
-        matrBuf[row] = (num *)malloc(countColumns * sizeof(num));
+    //РњР°С‚СЂРёС†Р° РґСЂРѕР±РµР№
+    fraction **matr = (fraction **)malloc(MAXSIZE * sizeof(fraction*));
+    for (int row = 0; row < MAXSIZE; row++) {
+        matr[row] = (fraction *)malloc(MAXSIZE * sizeof(fraction));
     }
-    matrStrings(matrBuf, countStrings,countColumns); //Матрица строк
 
-    fraction **matr = (fraction **)malloc(countStrings * sizeof(fraction*)); //Матрица дробей
-    for (int row = 0; row < countStrings; row++) {
-        matr[row] = (fraction *)malloc(countColumns * sizeof(fraction));
-    }
-    matr = matrFractions(matrBuf, countStrings, countColumns);//Матрица дробей
-    puts("Матрица дробей: ");
+    //РњР°С‚СЂРёС†Р° РґСЂРѕР±РµР№
+    int countStrings = matrFractions(matr);
+    int countColumns = countStrings+1;
+
+
+    puts("РњР°С‚СЂРёС†Р° РґСЂРѕР±РµР№: ");
     output1(matr, countStrings, countColumns);
     puts("***********************************");
-    //Решение слау
+    //Р РµС€РµРЅРёРµ СЃР»Р°Сѓ
     solvingSlau(matr, countStrings, countColumns);
     puts("");
     system ("pause");
