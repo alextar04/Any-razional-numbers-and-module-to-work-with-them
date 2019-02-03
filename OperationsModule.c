@@ -6,47 +6,52 @@
 fraction addition(fraction a, fraction b)
 {
     fraction result;
-    result.n = a.n * b.n; // создаем общий знаменатель
-    a.m *=(result.n/a.n);
-    b.m *=(result.n/b.n);
-    result.m = a.m + b.m; //после приведения к общему знаменателю можно сложить дроби
-    reduction(&result);//Сокращние дроби
+    unsigned int NOD = nod(a.n,b.n);
+    unsigned int NOK = (a.n * b.n)/NOD;
+    a.m *= (NOK/a.n);
+    b.m *= (NOK/b.n);
+    result.m = a.m + b.m;
+    result.n = NOK;
+    reduction(&result);//Сокращние дроби*/
     return result;
 }
 
 fraction subtraction(fraction a, fraction b)
 {
+
     fraction result;
-    result.n = a.n * b.n; // создаем общий знаменатель
-    a.m *=(result.n/a.n);
-    b.m *=(result.n/b.n);
-    result.m = a.m - b.m; //после приведения к общему знаменателю можно вычесть дроби
-    reduction(&result);//Сокращние дроби
+    unsigned int NOD = nod(a.n,b.n);
+    unsigned int NOK = (a.n * b.n)/NOD;
+    a.m *= (NOK/a.n);
+    b.m *= (NOK/b.n);
+    result.m = a.m - b.m;
+    result.n = NOK;
+    reduction(&result);//Сокращние дроби*/
     return result;
 }
 
 fraction multiplication(fraction a, fraction b)
 {
     fraction result;
+    int NOD = nod(a.m,b.n);
+    a.m/=abs(NOD);
+    b.n/=abs(NOD);
+    int NOD1 = nod(b.m,a.n);
+    b.m/=abs(NOD1);
+    a.n/=abs(NOD1);
     result.m = a.m * b.m; // перемножим числители дробей
     result.n = a.n * b.n; // перемножим знаменатели дробей
-    reduction(&result);//Сокращние дроби
+    reduction(&result);//Сокращние дроби*/
     return result;
 }
 
 fraction division(fraction a, fraction b)
 {
     fraction result;
-    int sign = 1;
-    if (a.m < 0)
-        if (b.m > 0) sign = -1;
-    if (a.m > 0)
-        if (b.m < 0) sign = -1;
-
-    result.m = sign * abs(a.m * b.n); //умножение числителя первой дроби со знаменателем второй
-    result.n = abs(a.n * b.m); //умножение знаменателя первой дроби с числителем второй
+    unsigned long temp = b.n;
+    b.n = b.m;
+    b.m = temp;
+    result = multiplication(a, b);
     reduction(&result);//Сокращние дроби
-
     return result;
 }
-
